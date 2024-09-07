@@ -34,17 +34,24 @@ func (c ginContext) Created(obj any) {
 	})
 }
 
-func (c ginContext) InternalServer(message string) {
-	c.JSON(http.StatusInternalServerError, response{
+func (c ginContext) NotFound(err error) {
+	c.JSON(http.StatusOK, response{
 		Success: false,
-		Message: message,
+		Message: err.Error(),
 	})
 }
 
-func (c ginContext) BadRequest(message string) {
+func (c ginContext) InternalServer(err error) {
+	c.JSON(http.StatusInternalServerError, response{
+		Success: false,
+		Message: err.Error(),
+	})
+}
+
+func (c ginContext) BadRequest(err error) {
 	c.JSON(http.StatusBadRequest, response{
 		Success: false,
-		Message: message,
+		Message: err.Error(),
 	})
 }
 

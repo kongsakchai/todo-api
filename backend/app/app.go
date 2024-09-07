@@ -5,8 +5,9 @@ type Context interface {
 	Bind(obj any) error
 	OK(obj any)
 	Created(obj any)
-	InternalServer(message string)
-	BadRequest(message string)
+	NotFound(err error)
+	InternalServer(err error)
+	BadRequest(err error)
 	JSON(code int, obj any)
 }
 

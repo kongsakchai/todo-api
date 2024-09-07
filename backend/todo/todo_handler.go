@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"errors"
 	"strconv"
 	"todo-api/app"
 )
@@ -8,7 +9,7 @@ import (
 type Storager interface {
 	Todos() ([]Todo, error)
 	Todo(id int64) (Todo, error)
-	Create(todo Todo) error
+	Create(todo Todo) (int64, error)
 	Update(todo Todo) error
 	Delete(id int64) error
 }
@@ -23,86 +24,89 @@ func NewHandler(repo Storager) *handler {
 	}
 }
 
-func (h *handler) Todos(app app.Context) {
+func (h *handler) Todos(c app.Context) {
 	todos, err := h.storage.Todos()
 	if err != nil {
-		app.InternalServer(err.Error())
+		c.InternalServer(err)
 		return
 	}
 
-	app.OK(todos)
+	c.OK(todos)
 }
 
-func (h *handler) Todo(app app.Context) {
-	idStr := app.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+func (h *handler) Todo(c app.Context) {
+	id := c.Param("id")
+	todoID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		app.BadRequest("Invalid ID")
+		c.BadRequest(errors.New("invalid id"))
 		return
 	}
 
-	todo, err := h.storage.Todo(id)
-	if err != nil {
-		app.InternalServer(err.Error())
+	todo, err := h.storage.Todo(todoID)
+	if err == ErrNotFound {
+		c.NotFound(err)
+		return
+	} else if err != nil {
+		c.InternalServer(err)
 		return
 	}
 
-	app.OK(todo)
+	c.OK(todo)
 }
 
-func (h *handler) Create(app app.Context) {
+func (h *handler) Create(c app.Context) {
 	var todo Todo
-	if err := app.Bind(&todo); err != nil {
-		app.BadRequest("Invalid request body")
+	if err := c.Bind(&todo); err != nil {
+		c.BadRequest(err)
 		return
 	}
 
-	err := h.storage.Create(todo)
+	var err error
+	todo.ID, err = h.storage.Create(todo)
 	if err != nil {
-		app.InternalServer(err.Error())
+		c.InternalServer(err)
 		return
 	}
 
-	app.Created(todo)
+	c.Created(todo)
 }
 
-func (h *handler) Update(app app.Context) {
-	idStr := app.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+func (h *handler) Update(c app.Context) {
+	id := c.Param("id")
+	todoID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		app.BadRequest("Invalid ID")
+		c.BadRequest(errors.New("invalid id"))
 		return
 	}
 
 	var todo Todo
-	if err := app.Bind(&todo); err != nil {
-		app.BadRequest("Invalid request body")
+	if err := c.Bind(&todo); err != nil {
+		c.BadRequest(err)
 		return
 	}
 
-	todo.ID = id
-	err = h.storage.Update(todo)
-	if err != nil {
-		app.InternalServer(err.Error())
+	todo.ID = todoID
+	if err = h.storage.Update(todo); err != nil {
+		c.InternalServer(err)
 		return
 	}
 
-	app.OK(todo)
+	c.OK(todo)
 }
 
-func (h *handler) Delete(app app.Context) {
-	idStr := app.Param("id")
+func (h *handler) Delete(c app.Context) {
+	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		app.BadRequest("Invalid ID")
+		c.BadRequest(err)
 		return
 	}
 
 	err = h.storage.Delete(id)
 	if err != nil {
-		app.InternalServer(err.Error())
+		c.InternalServer(err)
 		return
 	}
 
-	app.OK(nil)
+	c.OK(nil)
 }
