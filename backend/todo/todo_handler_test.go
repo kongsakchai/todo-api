@@ -7,20 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type handlerTestcase struct {
-	mockContext
-	title        string
-	params       map[string]string
-	payload      string
-	stID         int64
-	stResp       Todo
-	stErr        error
-	expectStatus int
-	expectResp   any
-}
-
 func TestGetTodosHandler(t *testing.T) {
-	testcases := []handlerTestcase{
+	type testcase struct {
+		title        string
+		stResp       Todo
+		stErr        error
+		expectStatus int
+		expectResp   []Todo
+	}
+
+	testcases := []testcase{
 		{
 			title:        "should response all todo when storage not error",
 			stResp:       Todo{ID: 1, Title: "Title 1", Description: "Description 1", Done: false},
@@ -31,6 +27,7 @@ func TestGetTodosHandler(t *testing.T) {
 			title:        "should response error when storage error",
 			stErr:        errors.New("error storage"),
 			expectStatus: 500,
+			expectResp:   nil,
 		},
 	}
 
@@ -41,17 +38,26 @@ func TestGetTodosHandler(t *testing.T) {
 			mock.err = tc.stErr
 			handler := NewHandler(mock)
 
-			ctx := mockContext{}
+			ctx := mockContext[[]Todo]{}
 			handler.Todos(&ctx)
 
-			assert.Equal(t, ctx.status, tc.expectStatus)
-			assert.Equal(t, ctx.response, tc.expectResp)
+			assert.Equal(t, tc.expectStatus, ctx.status)
+			assert.Equal(t, tc.expectResp, ctx.response)
 		})
 	}
 }
 
 func TestGetTodoHandler(t *testing.T) {
-	testcases := []handlerTestcase{
+	type testcase struct {
+		title        string
+		params       map[string]string
+		stResp       Todo
+		stErr        error
+		expectStatus int
+		expectResp   Todo
+	}
+
+	testcases := []testcase{
 		{
 			title:        "should response error when id param empty",
 			params:       map[string]string{"id": ""},
@@ -90,17 +96,26 @@ func TestGetTodoHandler(t *testing.T) {
 			mock.err = tc.stErr
 			handler := NewHandler(mock)
 
-			ctx := mockContext{params: tc.params}
+			ctx := mockContext[Todo]{params: tc.params}
 			handler.Todo(&ctx)
 
-			assert.Equal(t, ctx.status, tc.expectStatus)
-			assert.Equal(t, ctx.response, tc.expectResp)
+			assert.Equal(t, tc.expectStatus, ctx.status)
+			assert.Equal(t, tc.expectResp, ctx.response)
 		})
 	}
 }
 
 func TestCreateTodoHandler(t *testing.T) {
-	testcases := []handlerTestcase{
+	type testcase struct {
+		title        string
+		payload      string
+		stID         int64
+		stErr        error
+		expectStatus int
+		expectResp   Todo
+	}
+
+	testcases := []testcase{
 		{
 			title:        "should response error when payload invalid",
 			payload:      `{"title": "Title 1"`,
@@ -128,17 +143,26 @@ func TestCreateTodoHandler(t *testing.T) {
 			mock.id = tc.stID
 			handler := NewHandler(mock)
 
-			ctx := mockContext{payload: string(tc.payload)}
+			ctx := mockContext[Todo]{payload: string(tc.payload)}
 			handler.Create(&ctx)
 
-			assert.Equal(t, ctx.status, tc.expectStatus)
-			assert.Equal(t, ctx.response, tc.expectResp)
+			assert.Equal(t, tc.expectStatus, ctx.status)
+			assert.Equal(t, tc.expectResp, ctx.response)
 		})
 	}
 }
 
 func TestUpdateTodoHandler(t *testing.T) {
-	testcases := []handlerTestcase{
+	type testcase struct {
+		title        string
+		params       map[string]string
+		payload      string
+		stErr        error
+		expectStatus int
+		expectResp   Todo
+	}
+
+	testcases := []testcase{
 		{
 			title:        "should response error when id param empty",
 			params:       map[string]string{"id": ""},
@@ -177,18 +201,24 @@ func TestUpdateTodoHandler(t *testing.T) {
 			mock.err = tc.stErr
 			handler := NewHandler(mock)
 
-			ctx := mockContext{params: tc.params, payload: string(tc.payload)}
+			ctx := mockContext[Todo]{params: tc.params, payload: string(tc.payload)}
 			handler.Update(&ctx)
 
-			assert.Equal(t, ctx.status, tc.expectStatus)
-			assert.Equal(t, ctx.response, tc.expectResp)
+			assert.Equal(t, tc.expectStatus, ctx.status)
+			assert.Equal(t, tc.expectResp, ctx.response)
 		})
 	}
 }
 
 func TestDeleteTodoHandler(t *testing.T) {
+	type testcase struct {
+		title        string
+		params       map[string]string
+		stErr        error
+		expectStatus int
+	}
 
-	testcases := []handlerTestcase{
+	testcases := []testcase{
 		{
 			title:        "should response error when id param empty",
 			params:       map[string]string{"id": ""},
@@ -218,10 +248,10 @@ func TestDeleteTodoHandler(t *testing.T) {
 			mock.err = tc.stErr
 			handler := NewHandler(mock)
 
-			ctx := mockContext{params: tc.params}
+			ctx := mockContext[any]{params: tc.params}
 			handler.Delete(&ctx)
 
-			assert.Equal(t, ctx.status, tc.expectStatus)
+			assert.Equal(t, tc.expectStatus, ctx.status)
 		})
 	}
 }
