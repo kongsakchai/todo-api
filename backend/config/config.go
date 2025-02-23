@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Port        string
 	DatabaseURL string
 }
 
@@ -19,8 +20,14 @@ func Get() Config {
 			panic("DATABASE_URL is not set")
 		}
 
+		port := os.Getenv("PORT")
+		if len(port) == 0 {
+			port = "8080"
+		}
+
 		config = Config{
 			DatabaseURL: databaseURL,
+			Port:        port,
 		}
 	})
 

@@ -1,0 +1,26 @@
+@BASE=http://localhost:8080
+
+### Get
+GET {{BASE}}/todos
+
+### Get by id
+GET {{BASE}}/todos/1
+
+### Create
+POST {{BASE}}/todos
+
+{
+    "title": "Learn Java",
+    "description": "Learn Java programming language"
+}
+
+### Update
+PUT {{BASE}}/todos/3
+
+{
+    "title": "Learn Python",
+    "description": "Learn Python programming language"
+}
+
+### Delete
+DELETE {{BASE}}/todos/4

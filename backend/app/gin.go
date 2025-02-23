@@ -56,7 +56,7 @@ func (c ginContext) BadRequest(err error) {
 }
 
 func (c ginContext) JSON(code int, obj any) {
-	c.Context.JSON(http.StatusUnauthorized, obj)
+	c.Context.JSON(code, obj)
 }
 
 type ginRoute struct {
@@ -79,28 +79,28 @@ func NewGinRouter() *ginRoute {
 	return &ginRoute{r}
 }
 
-func NewGinHandler(handler func(Context)) gin.HandlerFunc {
+func newGinHandler(handler func(Context)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		handler(&ginContext{c})
 	}
 }
 
 func (r *ginRoute) GET(path string, handler func(Context)) {
-	r.Engine.GET(path, NewGinHandler(handler))
+	r.Engine.GET(path, newGinHandler(handler))
 }
 
 func (r *ginRoute) POST(path string, handler func(Context)) {
-	r.Engine.POST(path, NewGinHandler(handler))
+	r.Engine.POST(path, newGinHandler(handler))
 }
 
 func (r *ginRoute) PUT(path string, handler func(Context)) {
-	r.Engine.PUT(path, NewGinHandler(handler))
+	r.Engine.PUT(path, newGinHandler(handler))
 }
 
 func (r *ginRoute) DELETE(path string, handler func(Context)) {
-	r.Engine.DELETE(path, NewGinHandler(handler))
+	r.Engine.DELETE(path, newGinHandler(handler))
 }
 
 func (r *ginRoute) PATCH(path string, handler func(Context)) {
-	r.Engine.PATCH(path, NewGinHandler(handler))
+	r.Engine.PATCH(path, newGinHandler(handler))
 }

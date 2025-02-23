@@ -24,15 +24,3 @@ type response struct {
 	Message string `json:"message"`
 	Data    any    `json:"data"`
 }
-
-type app struct {
-	Router Router
-}
-
-func New(router Router) *app {
-	return &app{Router: router}
-}
-
-func NewGin() *app {
-	return New(NewGinRouter())
-}

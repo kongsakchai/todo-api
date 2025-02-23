@@ -18,9 +18,9 @@ type handler struct {
 	storage Storager
 }
 
-func NewHandler(repo Storager) *handler {
+func NewHandler(st Storager) *handler {
 	return &handler{
-		storage: repo,
+		storage: st,
 	}
 }
 
@@ -61,14 +61,13 @@ func (h *handler) Create(c app.Context) {
 		return
 	}
 
-	var err error
-	todo.ID, err = h.storage.Create(todo)
+	id, err := h.storage.Create(todo)
 	if err != nil {
 		c.InternalServer(err)
 		return
 	}
 
-	c.Created(todo)
+	c.Created(id)
 }
 
 func (h *handler) Update(c app.Context) {
