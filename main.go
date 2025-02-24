@@ -9,9 +9,9 @@ import (
 	"os/signal"
 	"time"
 	"todo-api/app"
+	"todo-api/app/todo"
 	"todo-api/config"
 	"todo-api/database"
-	"todo-api/todo"
 )
 
 func main() {
