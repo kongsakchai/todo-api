@@ -1,0 +1,12 @@
+services:
+  database:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: todo_app
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
